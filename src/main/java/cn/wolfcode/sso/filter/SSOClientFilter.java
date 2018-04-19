@@ -37,7 +37,6 @@ public class SSOClientFilter implements Filter {
 			chain.doFilter(request, response);
 			return;
 		}
-		/**-------------------------阶段二添加的代码start---------------------------------**/
 		//判断地址栏中是否有携带token参数.
 		String token = req.getParameter("token");
 		if(StringUtils.isNoneBlank(token)){
@@ -48,6 +47,11 @@ public class SSOClientFilter implements Filter {
 			Map<String,String> params = new HashMap<String,String>();
 			//把客户端地址栏添加到的token信息传递给统一认证中心进行校验
 			params.put("token", token);
+			/**-------------------------阶段四添加的代码start---------------------------------**/
+			//获取客户端的完整登出地址 http://www.crm.com:8088/logOut
+			params.put("clientUrl", SSOClientUtil.getClientLogOutUrl());
+			params.put("jsessionid", session.getId());
+			/**-------------------------阶段四添加的代码end---------------------------------**/
 			try {
 				String isVerify = HttpUtil.sendHttpRequest(httpURL, params);
 				if("true".equals(isVerify)){
@@ -64,7 +68,6 @@ public class SSOClientFilter implements Filter {
 				e.printStackTrace();
 			}
 		}
-		/**-------------------------阶段二添加的代码end---------------------------------**/
 		//没有局部会话,重定向到统一认证中心,检查是否有其他的系统已经登录过.
 		// http://www.sso.com:8443/checkLogin?redirectUrl=http://www.crm.com:8088
 		SSOClientUtil.redirectToSSOURL(req, resp);
